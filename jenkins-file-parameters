@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'AMI_ID', defaultValue: '', description: 'id da ami')
+        string(name: 'SG_MASTERS', defaultValue: '', description: 'id do sec group das masters')
+        string(name: 'SG_WORKERS', defaultValue: '', description: 'id do sec group das workers')
+        string(name: 'SG_HAPROXY', defaultValue: '', description: 'id do sec group do haproxy')
+    }
+
+    stages {
+        stage('Build cluster') {
+            steps {
+                sh "echo \"--- ${VERSION} ----\""
+                echo "Building.. ${VERSION}"
+            }
+        }
+        stage('Docker image') {
+            steps {
+                sh 'ls -la'
+                echo 'Building..'
+            }
+        }
+        stage('Docker image Push') {
+            steps {
+                sh 'ls -la'
+                echo 'Building..'
+            }
+        }
+        stage('TDD') {
+            steps {
+                sh 'ls -la'
+                echo 'Building..'
+            }
+        }
+        
+        stage('K8s-DEV') {
+            steps {
+                sh 'ls -la'
+                echo 'Building..'
+            }
+        }
+        stage('K8s-QA') {
+            steps {
+                sh 'ls -la'
+                echo 'Building..'
+            }
+        }
+        stage('K8s-PROD') {
+            steps {
+                sh 'ls -la'
+                echo 'Building..'
+            }
+        }
+    }
+}
