@@ -107,7 +107,7 @@ backend k8s-masters
         
 " > ../ansible/haproxy/haproxy.cfg
 
-
+echo  "Configurando host do haproxy ..."
 echo "
 127.0.0.1 localhost
 $ID_HAPROXY k8s-haproxy # IP privado proxy
@@ -121,7 +121,7 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 " > ../ansible/host/hosts
 
-
+echo  "Montando script dos joins ..."
 cd ../ansible
 
 ANSIBLE_OUT=$(ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts provisionar.yml -u ubuntu --private-key "/var/lib/jenkins/.ssh/id_rsa")
@@ -136,6 +136,7 @@ K8S_JOIN_WORKER=$(echo $ANSIBLE_OUT | grep -oP "(kubeadm join.*?discovery-token-
 echo $K8S_JOIN_MASTER
 echo $K8S_JOIN_WORKER
 
+echo  "Criando arq provisionar-k8s ..."
 cat <<EOF > 2-provisionar-k8s-master-auto-shell.yml
 - hosts:
   - ec2-k8s-m2
@@ -180,4 +181,5 @@ cat <<EOF > 2-provisionar-k8s-master-auto-shell.yml
         msg: " '{{ ps.stdout_lines }}' "
 EOF
 
+echo  "Iniciando ansible playbook ..."
 ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts 2-provisionar-k8s-master-auto-shell.yml -u ubuntu --private-key "/var/lib/jenkins/.ssh/id_rsa"
