@@ -6,48 +6,52 @@ pipeline {
     }
 
     stages {
+        stage('Clone repo') {
+            steps {
+                git url: 'https://github.com/emaruya/pipeline_multi_master', branch: 'main'
+            }
+        }
         stage('Build cluster') {
             steps {
-                sh "echo \"--- ${VERSION} ----\""
-                echo "Building.. ${VERSION}"
+                sh "./deploy.sh"
             }
         }
-        stage('Docker image') {
-            steps {
-                sh 'ls -la'
-                echo 'Building..'
-            }
-        }
-        stage('Docker image Push') {
-            steps {
-                sh 'ls -la'
-                echo 'Building..'
-            }
-        }
-        stage('TDD') {
-            steps {
-                sh 'ls -la'
-                echo 'Building..'
-            }
-        }
+        // stage('Docker image') {
+        //     steps {
+        //         sh 'ls -la'
+        //         echo 'Building..'
+        //     }
+        // }
+        // stage('Docker image Push') {
+        //     steps {
+        //         sh 'ls -la'
+        //         echo 'Building..'
+        //     }
+        // }
+        // stage('TDD') {
+        //     steps {
+        //         sh 'ls -la'
+        //         echo 'Building..'
+        //     }
+        // }
         
-        stage('K8s-DEV') {
-            steps {
-                sh 'ls -la'
-                echo 'Building..'
-            }
-        }
-        stage('K8s-QA') {
-            steps {
-                sh 'ls -la'
-                echo 'Building..'
-            }
-        }
-        stage('K8s-PROD') {
-            steps {
-                sh 'ls -la'
-                echo 'Building..'
-            }
-        }
+        // stage('K8s-DEV') {
+        //     steps {
+        //         sh 'ls -la'
+        //         echo 'Building..'
+        //     }
+        // }
+        // stage('K8s-QA') {
+        //     steps {
+        //         sh 'ls -la'
+        //         echo 'Building..'
+        //     }
+        // }
+        // stage('K8s-PROD') {
+        //     steps {
+        //         sh 'ls -la'
+        //         echo 'Building..'
+        //     }
+        // }
     }
 }
