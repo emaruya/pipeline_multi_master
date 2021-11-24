@@ -1,9 +1,9 @@
 #!/bin/bash
 cd terraform
 
-uri=$(terraform output | grep "k8s-master 1" | awk '{print $4;exit}')
+uri=$(terraform output | grep "k8s-master 1" | awk '{print $6 " " $7 " " $8 " " $9;exit}')
 
-kubectl=$(ssh -i /var/lib/jenkins/.ssh/id_rsa ubuntu@$uri 'kubectl get nodes -o wide')
+kubectl=$($uri 'sudo kubectl get nodes -o wide')
 
 echo $kubectl
 
@@ -15,7 +15,7 @@ regex_worker1='k8s-workers-1.*?Ready'
 regex_worker2='k8s-workers-2.*?Ready'
 regex_worker3='k8s-workers-3.*?Ready'
 
-if [[$kubectl =~  $regex_master1 && $kubectl =~  $regex_master2 && $kubectl =~  $regex_master3 && $kubectl =~  $regex_worker1 && $kubectl =~  $regex_worker2 && $kubectl =~  $regex_worker3]]
+if [[ $kubectl =~  $regex_master1 && $kubectl =~  $regex_master2 && $kubectl =~  $regex_master3 && $kubectl =~  $regex_worker1 && $kubectl =~  $regex_worker2 && $kubectl =~  $regex_worker3 ]]
 then 
     echo "::::: Masters e workers no ar :::::"
     exit 0
