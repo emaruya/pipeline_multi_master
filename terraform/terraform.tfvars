@@ -5,4 +5,4 @@ subnets = [
     "subnet-0cde2b21259997493"
   ]
 vpcId = "vpc-0530e1ffb643de5d0"
-chave = "erico-keypar"
+chave = "chave-key-erika"
