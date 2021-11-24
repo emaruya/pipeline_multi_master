@@ -321,7 +321,7 @@ resource "aws_security_group_rule" "extra_rule3" {
 }
 
 # Master -> HAProxy 
-resource "aws_security_group_rule" "extra_rule3" {
+resource "aws_security_group_rule" "extra_rule4" {
   security_group_id        = "${aws_security_group.acessos_haproxy.id}"
   from_port                = 0
   to_port                  = 0
