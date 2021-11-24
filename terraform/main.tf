@@ -10,7 +10,7 @@ resource "aws_instance" "k8s_proxy" {
   key_name = "chave-key-erika"
   root_block_device {
     encrypted = true
-    volume_size = 8
+    volume_size = 30
   }
   tags = {
     Name = "k8s-haproxy-projeto"
@@ -27,7 +27,7 @@ resource "aws_instance" "k8s_masters" {
   count         = "${length(var.subnets)}"
   root_block_device {
     encrypted = true
-    volume_size = 20
+    volume_size = 30
   }
   tags = {
     Name = "k8s-master-projeto${count.index}"
@@ -47,7 +47,7 @@ resource "aws_instance" "k8s_workers" {
   count         = "${length(var.subnets)}"
   root_block_device {
     encrypted = true
-    volume_size = 20
+    volume_size = 30
   }
   tags = {
     Name = "k8s_workers-projeto${count.index}"
