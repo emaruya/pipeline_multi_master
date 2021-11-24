@@ -57,7 +57,7 @@ resource "aws_instance" "k8s_workers" {
 
 
 resource "aws_security_group" "acessos_masters" {
-  name        = "k8s-acessos-masters-projeto"
+  name        = "k8s-masters-projeto"
   description = "acessos inbound traffic"
   vpc_id      = "${var.vpcId}"
 
@@ -138,7 +138,7 @@ resource "aws_security_group" "acessos_masters" {
   ]
 
   tags = {
-    Name = "k8s-acessos-masters-projeto"
+    Name = "k8s-masters-projeto"
   }
 }
 
