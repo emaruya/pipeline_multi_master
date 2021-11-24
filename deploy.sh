@@ -121,9 +121,10 @@ ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
 " > ../ansible/host/hosts
 
-echo  "Montando script dos joins ..."
+echo  "Rodando provisionar.yml ..."
 cd ../ansible
 
+ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts provisionar.yml -u ubuntu --private-key "/var/lib/jenkins/.ssh/id_rsa"
 ANSIBLE_OUT=$(ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts provisionar.yml -u ubuntu --private-key "/var/lib/jenkins/.ssh/id_rsa")
 
 #### Mac ###
