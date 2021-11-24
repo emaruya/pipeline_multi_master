@@ -9,7 +9,7 @@
 
 cd terraform
 terraform init
-TF_VAR_amiId=$AMI_ID TF_VAR_sgMasters=$SG_MASTERS TF_VAR_sgWorkers=$SG_WORKERS TF_VAR_sgHaproxy=$SG_HAPROXY terraform apply -auto-approve
+TF_VAR_amiId=$AMI_ID terraform apply -auto-approve
 
 echo  "Aguardando a criação das maquinas ..."
 sleep 5
@@ -54,7 +54,7 @@ $ID_W1_DNS
 $ID_W2_DNS
 [ec2-k8s-w3]
 $ID_W3_DNS
-" > ../2-ansible/01-k8s-install-masters_e_workers/hosts
+" > ../ansible/hosts
 
 echo "
 global
@@ -105,7 +105,7 @@ backend k8s-masters
         server k8s-master-1 $ID_M2:6443 check fall 3 rise 2 # IP ec2 Cluster Master k8s - 2 
         server k8s-master-2 $ID_M3:6443 check fall 3 rise 2 # IP ec2 Cluster Master k8s - 3 
         
-" > ../2-ansible/01-k8s-install-masters_e_workers/haproxy/haproxy.cfg
+" > ../ansible/haproxy/haproxy.cfg
 
 
 echo "
@@ -119,17 +119,17 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 ff02::3 ip6-allhosts
-" > ../2-ansible/01-k8s-install-masters_e_workers/host/hosts
+" > ../ansible/host/hosts
 
 
-cd ../2-ansible/01-k8s-install-masters_e_workers
+cd ../ansible
 
-ANSIBLE_OUT=$(ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts provisionar.yml -u ubuntu --private-key "~/.ssh/id_rsa")
+ANSIBLE_OUT=$(ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts provisionar.yml -u ubuntu --private-key "/var/lib/jenkins/.ssh/id_rsa")
 
 #### Mac ###
 # K8S_JOIN_MASTER=$(echo $ANSIBLE_OUT | grep -oE "(kubeadm join.*?certificate-key.*?)'" | sed 's/\\//g' | sed "s/'t//g" | sed "s/'//g" | sed "s/,//g")
 # K8S_JOIN_WORKER=$(echo $ANSIBLE_OUT | grep -oE "(kubeadm join.*?discovery-token-ca-cert-hash.*?)'" | head -n 1 | sed 's/\\//g' | sed "s/'t//g" | sed "s/'//g" | sed "s/'//g" | sed "s/,//g")
-#### Linix ###
+#### Linux ###
 K8S_JOIN_MASTER=$(echo $ANSIBLE_OUT | grep -oP "(kubeadm join.*?certificate-key.*?)'" | sed 's/\\//g' | sed "s/'t//g" | sed "s/'//g" | sed "s/,//g")
 K8S_JOIN_WORKER=$(echo $ANSIBLE_OUT | grep -oP "(kubeadm join.*?discovery-token-ca-cert-hash.*?)'" | head -n 1 | sed 's/\\//g' | sed "s/'t//g" | sed "s/'//g" | sed "s/'//g" | sed "s/,//g")
 
@@ -180,4 +180,4 @@ cat <<EOF > 2-provisionar-k8s-master-auto-shell.yml
         msg: " '{{ ps.stdout_lines }}' "
 EOF
 
-ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts 2-provisionar-k8s-master-auto-shell.yml -u ubuntu --private-key "~/.ssh/id_rsa"
+ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i hosts 2-provisionar-k8s-master-auto-shell.yml -u ubuntu --private-key "/var/lib/jenkins/.ssh/id_rsa"

@@ -3,9 +3,6 @@ pipeline {
 
     parameters {
         string(name: 'AMI_ID', defaultValue: '', description: 'id da ami')
-        string(name: 'SG_MASTERS', defaultValue: '', description: 'id do sec group das masters')
-        string(name: 'SG_WORKERS', defaultValue: '', description: 'id do sec group das workers')
-        string(name: 'SG_HAPROXY', defaultValue: '', description: 'id do sec group do haproxy')
     }
 
     stages {

@@ -3,9 +3,9 @@ provider "aws" {
 }
 
 resource "aws_instance" "k8s_proxy" {
-  subnet_id = "subnet-0e6a2c0827160332c"
+  subnet_id = "${element(var.subnets, 0)}"
   ami = "${var.amiId}"
-  instance_type = "t2.micro"
+  instance_type = "t2.large"
   associate_public_ip_address = true
   key_name = "chave-key-erika"
   root_block_device {
@@ -19,15 +19,15 @@ resource "aws_instance" "k8s_proxy" {
 }
 
 resource "aws_instance" "k8s_masters" {
-  subnet_id = "subnet-07384d1338e0f2f61"
-  ami = data.aws_ami.projeto-final.id
+  subnet_id = "${element(var.subnets, count.index)}"
+  ami = "${var.amiId}"
   instance_type = "t2.large"
   associate_public_ip_address = true
   key_name = "chave-key-erika"
-  count         = 3
+  count         = "${length(var.subnets)}"
   root_block_device {
     encrypted = true
-    volume_size = 8
+    volume_size = 20
   }
   tags = {
     Name = "k8s-master-projeto${count.index}"
@@ -39,15 +39,15 @@ resource "aws_instance" "k8s_masters" {
 }
 
 resource "aws_instance" "k8s_workers" {
-  subnet_id = "subnet-0e6a2c0827160332c"
-  ami = data.aws_ami.projeto-final.id
-  instance_type = "t2.medium"
+  subnet_id = "${element(var.subnets, count.index)}"
+  ami = "${var.amiId}"
+  instance_type = "t2.large"
   associate_public_ip_address = true
   key_name = "chave-key-erika"
-  count         = 3
+  count         = "${length(var.subnets)}"
   root_block_device {
     encrypted = true
-    volume_size = 8
+    volume_size = 20
   }
   tags = {
     Name = "k8s_workers-projeto${count.index}"
@@ -59,7 +59,7 @@ resource "aws_instance" "k8s_workers" {
 resource "aws_security_group" "acessos_masters" {
   name        = "k8s-acessos-masters-projeto"
   description = "acessos inbound traffic"
-  vpc_id      = "vpc-010ad4cd4b8ad8a3c"
+  vpc_id      = "${var.vpcId}"
 
   ingress = [
     {
@@ -108,19 +108,19 @@ resource "aws_security_group" "acessos_masters" {
     #   self             = false
     #   to_port          = 0
     # },
-    {
-      cidr_blocks      = [
-        "0.0.0.0/0",
-      ]
-      description      = ""
-      from_port        = 0
-      ipv6_cidr_blocks = []
-      prefix_list_ids  = []
-      protocol         = "tcp"
-      security_groups  = []
-      self             = false
-      to_port          = 65535
-    },
+    # {
+    #   cidr_blocks      = [
+    #     "0.0.0.0/0",
+    #   ]
+    #   description      = ""
+    #   from_port        = 0
+    #   ipv6_cidr_blocks = []
+    #   prefix_list_ids  = []
+    #   protocol         = "tcp"
+    #   security_groups  = []
+    #   self             = false
+    #   to_port          = 65535
+    # },
   ]
 
   egress = [
@@ -145,7 +145,7 @@ resource "aws_security_group" "acessos_masters" {
 resource "aws_security_group" "acessos_haproxy" {
   name        = "k8s-haproxy-projeto"
   description = "acessos inbound traffic"
-  vpc_id      = "vpc-010ad4cd4b8ad8a3c"
+  vpc_id      = "${var.vpcId}"
 
   ingress = [
     {
@@ -220,7 +220,7 @@ resource "aws_security_group" "acessos_haproxy" {
 resource "aws_security_group" "acessos_workers" {
   name        = "k8s-workers-projeto"
   description = "acessos inbound traffic"
-  vpc_id      = "vpc-010ad4cd4b8ad8a3c"
+  vpc_id      = "${var.vpcId}"
 
   ingress = [
     {
@@ -279,6 +279,48 @@ resource "aws_security_group" "acessos_workers" {
   }
 }
 
+
+# Master -> Worker
+resource "aws_security_group_rule" "extra_rule1" {
+  security_group_id        = "${aws_security_group.acessos_workers.id}"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  type                     = "ingress"
+  source_security_group_id = "${aws_security_group.acessos_masters.id}"
+}
+
+# Worker -> Master
+# resource "aws_security_group_rule" "extra_rule" {
+#   security_group_id        = "${aws_security_group.acessos_masters.id}"
+#   from_port                = 0
+#   to_port                  = 0
+#   protocol                 = "-1"
+#   type                     = "ingress"
+#   source_security_group_id = "${aws_security_group.acessos_workers.id}"
+# }
+
+# Worker -> HAProxy
+resource "aws_security_group_rule" "extra_rule2" {
+  security_group_id        = "${aws_security_group.acessos_haproxy.id}"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  type                     = "ingress"
+  source_security_group_id = "${aws_security_group.acessos_workers.id}"
+}
+
+# HAProxy -> Master
+resource "aws_security_group_rule" "extra_rule3" {
+  security_group_id        = "${aws_security_group.acessos_masters.id}"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
+  type                     = "ingress"
+  source_security_group_id = "${aws_security_group.acessos_haproxy.id}"
+}
+
+
 output "k8s-masters" {
   value = [
     for key, item in aws_instance.k8s_masters :
@@ -316,20 +358,28 @@ variable "amiId" {
   description = "amiId"
 }
 
-variable "sgMasters" {
+variable "subnets" {
+  type        = list(string)
+}
+variable "vpcId" {
   type = string
-  description = "sgMasters"
+  description = "vpcId"
 }
 
-variable "sgWorkers" {
-  type = string
-  description = "sgWorkers"
-}
-
-variable "sgHaproxy" {
-  type = string
-  description = "sgHaproxy"
-}
+#variable "sgMasters" {
+#  type = string
+#  description = "sgMasters"
+#}
+#
+#variable "sgWorkers" {
+#  type = string
+#  description = "sgWorkers"
+#}
+#
+#variable "sgHaproxy" {
+#  type = string
+#  description = "sgHaproxy"
+#}
 
 
 # terraform refresh para mostrar o ssh
